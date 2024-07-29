@@ -47,6 +47,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = "Chatbot_Project.urls"
@@ -66,6 +68,25 @@ TEMPLATES = [
         },
     },
 ]
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+    'HEAD',
+]
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+    'x-csrftoken',
+    'access-control-allow-origin',
+]
+
 
 WSGI_APPLICATION = "Chatbot_Project.wsgi.application"
 

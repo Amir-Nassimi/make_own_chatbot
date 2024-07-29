@@ -16,6 +16,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 class AuthViewSet(ViewSet):
     permission_classes = [AllowAny]
 
+
     @swagger_auto_schema(
         operation_description="User login",
         request_body=openapi.Schema(
@@ -41,6 +42,16 @@ class AuthViewSet(ViewSet):
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+    @swagger_auto_schema(
+        operation_description="User logout",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token')
+            }
+        ),
+        responses={205: 'Successfully logged out', 400: 'Bad request'}
+    )
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def logout(self, request):
         try:
@@ -52,5 +63,5 @@ class AuthViewSet(ViewSet):
             token.blacklist()
 
             return Response(status=status.HTTP_205_RESET_CONTENT)
-        except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        except Exception as error:
+            return Response({'detail': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)

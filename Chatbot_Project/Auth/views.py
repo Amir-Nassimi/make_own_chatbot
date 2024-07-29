@@ -67,6 +67,16 @@ class AuthViewSet(ViewSet):
             return Response({'detail': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+    @swagger_auto_schema(
+        operation_description="Refresh access token",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token')
+            }
+        ),
+        responses={200: 'New access token', 400: 'BAD_REQUEST'}
+    )
     @action(detail=False, methods=['post'])
     def refresh(self, request):
         serializer = TokenRefreshSerializer(data=request.data)

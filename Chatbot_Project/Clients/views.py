@@ -28,6 +28,11 @@ class UsersViewSet(ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+    @swagger_auto_schema(
+        operation_description="Get user information",
+        responses={200: UserSerializer},
+        security=[{'Bearer': []}]
+    )
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def user_info(self, request):
         user = request.user

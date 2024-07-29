@@ -11,7 +11,7 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = Users
-        fields = '__all__'
+        exclude =['user_permissions', 'groups', 'date_joined', 'is_superuser', 'last_login', 'password']
 
 
 class RegisterSerializer(ModelSerializer):

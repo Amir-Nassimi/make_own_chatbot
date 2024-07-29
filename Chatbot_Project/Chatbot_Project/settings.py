@@ -40,6 +40,10 @@ INSTALLED_APPS = [
 
     'drf_yasg',
     'corsheaders',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+
     'Auth.apps.AuthConfig'
 ]
 

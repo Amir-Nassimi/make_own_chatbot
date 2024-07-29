@@ -77,7 +77,7 @@ class AuthViewSet(ViewSet):
         ),
         responses={200: 'New access token', 400: 'BAD_REQUEST'}
     )
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def refresh(self, request):
         serializer = TokenRefreshSerializer(data=request.data)
         if serializer.is_valid():

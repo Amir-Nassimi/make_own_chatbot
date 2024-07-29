@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 
 
 
@@ -65,3 +65,11 @@ class AuthViewSet(ViewSet):
             return Response(status=status.HTTP_205_RESET_CONTENT)
         except Exception as error:
             return Response({'detail': f'{error}'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @action(detail=False, methods=['post'])
+    def refresh(self, request):
+        serializer = TokenRefreshSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

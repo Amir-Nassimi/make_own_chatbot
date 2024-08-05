@@ -13,6 +13,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     last_name = models.TextField()
     first_name = models.TextField()
     email = models.EmailField(unique=True)
+    is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
 

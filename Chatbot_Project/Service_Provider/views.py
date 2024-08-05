@@ -9,7 +9,7 @@ from .serializers import TrainableDataSerializer
 
 
 class TrainableDataViewSet(ModelViewSet):
-    queryset = TrainableData.objects.al()
+    queryset = TrainableData.objects.all()
     serializer_class = TrainableDataSerializer
     permission_classes = [IsAuthenticated]
 

@@ -14,6 +14,7 @@ class TrainableDataViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        request.data['user'] = request.user.id
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

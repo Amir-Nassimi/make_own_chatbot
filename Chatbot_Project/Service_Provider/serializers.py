@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 
 from .models import ChatBot, TrainableData
 
@@ -16,7 +16,8 @@ class ChatBotSerializer(ModelSerializer):
 
 
 class TrainableDataSerializer(ModelSerializer):
-    bot = ChatBotSerializer(required=False, many=True)
+    bot = PrimaryKeyRelatedField(queryset=ChatBot.objects.all(), write_only=True)
+
 
     class Meta:
         model = TrainableData

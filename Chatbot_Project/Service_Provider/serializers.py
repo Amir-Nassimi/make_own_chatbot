@@ -7,8 +7,9 @@ from .models import ChatBot, TrainableData
 class ChatBotSerializer(ModelSerializer):
     class Meta:
         model = ChatBot
-        exclude = ['user']
+        fields = '__all__'
         extra_kwargs = {
+            'user': {'write_only':True},
             'ip': {'required': False},
             'port': {'required': False}
         }

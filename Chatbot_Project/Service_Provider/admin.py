@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import TrainableData, ChatBot
+
+
+admin.site.register(ChatBot)
+admin.site.register(TrainableData)

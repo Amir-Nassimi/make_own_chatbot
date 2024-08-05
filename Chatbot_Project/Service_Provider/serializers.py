@@ -4,7 +4,19 @@ from .models import ChatBot, TrainableData
 
 
 
+class TrainableDataSerializer(ModelSerializer):
+    class Meta:
+        model = TrainableData
+        fields = '__all__'
+        extra_kwargs = {
+            'bot': {'write_only':True},
+            'used': {'read_only':True}
+        }
+
+
 class ChatBotSerializer(ModelSerializer):
+    Chatbot_TrainableData = TrainableDataSerializer(many=True, read_only=True)
+
     class Meta:
         model = ChatBot
         fields = '__all__'
@@ -13,12 +25,3 @@ class ChatBotSerializer(ModelSerializer):
             'ip': {'required': False},
             'port': {'required': False}
         }
-
-
-class TrainableDataSerializer(ModelSerializer):
-    bot = PrimaryKeyRelatedField(queryset=ChatBot.objects.all(), write_only=True)
-
-
-    class Meta:
-        model = TrainableData
-        fields = '__all__'

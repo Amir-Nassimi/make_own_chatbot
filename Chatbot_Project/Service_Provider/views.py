@@ -118,3 +118,33 @@ class ProvideServiceViewSet(ViewSet):
                 return Response(f'Failed to clean up training data files: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response('The bot has been trained sucesfully!', status=status.HTTP_200_OK)
+    
+
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def initialize(self, request, pk=None):
+        try:
+            bot = ChatBot.objects.get(user=request.user, id=pk)
+        except ChatBot.DoesNotExist as error:
+            return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
+        
+        model_path = os.path.join(Config().Path(bot.id), 'models')
+
+        if os.path.exists(model_path):
+            port = 8001
+            command = [
+                'rasa', 'run', '--model', model_path, '--port', str(port), '--enable-api'
+            ]
+
+            try:
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
+                bot.PORT = 8001
+                bot.IP = 'localhost'
+                bot.PID = str(process.id)
+                bot.save()
+                return Response('The bot has been initialized sucesfully!', status=status.HTTP_200_OK)
+            except Exception as error:
+                return Response(f'Failed to start chatbot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response("No chatbot found!", status=status.HTTP_404_NOT_FOUND)
+        

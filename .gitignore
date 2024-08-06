@@ -12,3 +12,4 @@
 
 # Ignore all rasa files
 *.rasa
+RasaData

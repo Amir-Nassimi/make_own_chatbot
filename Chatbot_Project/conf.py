@@ -7,6 +7,5 @@ class Config:
     def __init__(self):
         pass
     
-    @property
-    def Path(bot_id):
+    def Path(self, bot_id):
         return f'./RasaData/{bot_id}'

@@ -9,4 +9,4 @@ class Config:
     
     @property
     def Path(bot_id):
-        return f'RasaData/{bot_id}'
+        return f'./RasaData/{bot_id}'

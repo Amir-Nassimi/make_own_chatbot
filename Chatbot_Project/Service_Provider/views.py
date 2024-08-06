@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, sys, yaml, subprocess, signal
+import os, sys, yaml, subprocess, signal, psutil
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -117,7 +117,7 @@ class ProvideServiceViewSet(ViewSet):
             except Exception as error:
                 return Response(f'Failed to clean up training data files: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response('The bot has been trained sucesfully!', status=status.HTTP_200_OK)
+        return Response('This ChatBot has been trained sucesfully!', status=status.HTTP_200_OK)
     
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
@@ -128,7 +128,7 @@ class ProvideServiceViewSet(ViewSet):
             return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
         
         if bot.is_active:
-            return Response('The bot has been initialized before!', status=status.HTTP_200_OK)
+            return Response('This ChatBot has been initialized before!', status=status.HTTP_200_OK)
         
         model_path = os.path.join(Config().Path(bot.id), 'models')
 
@@ -140,15 +140,14 @@ class ProvideServiceViewSet(ViewSet):
 
             try:
                 process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                
                 bot.PORT = 8001
                 bot.IP = 'localhost'
-                bot.PID = process.id
+                bot.PID = process.pid
                 bot.is_active = True
                 bot.save()
-                return Response('The bot has been initialized sucesfully!', status=status.HTTP_200_OK)
+                return Response('This ChatBot has been initialized sucesfully!', status=status.HTTP_200_OK)
             except Exception as error:
-                return Response(f'Failed to start chatbot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(f'Failed to start ChatBot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response("No chatbot found!", status=status.HTTP_404_NOT_FOUND)
         
@@ -161,16 +160,17 @@ class ProvideServiceViewSet(ViewSet):
             return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
 
         if not bot.is_active:
-            return Response('The bot has not been initialized yet!', status=status.HTTP_200_OK)
+            return Response('This ChatBot has not been initialized yet!', status=status.HTTP_200_OK)
 
         try:
-            os.kill(bot.PID, signal.SIGTERM)
+            process = psutil.Process(bot.PID)
+            process.terminate()
             
             bot.PID = None
             bot.is_active = False
             bot.save()
-            return Response('The bot has been initialized sucesfully!', status=status.HTTP_200_OK)
-        except ProcessLookupError:
+            return Response('This ChatBot has been initialized sucesfully!', status=status.HTTP_200_OK)
+        except psutil.NoSuchProcess:
             return Response('Process not found', status=status.HTTP_404_NOT_FOUND)
         except Exception as error:
-            return Response(f'Failed to start chatbot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(f'Failed to start ChatBot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -1,5 +1,3 @@
-from drf_yasg.utils import swagger_auto_schema
-
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
@@ -11,14 +9,6 @@ from .serializers import UserSerializer, RegisterSerializer
 
 
 class UsersViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_description="User registration",
-        request_body=RegisterSerializer,
-        responses={
-            201: 'User registered successfully',
-            400: 'Bad request'
-        }
-    )
     @action(detail=False, methods=['post'], permission_classes=[AllowAny])
     def register(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -28,11 +18,6 @@ class UsersViewSet(ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-    @swagger_auto_schema(
-        operation_description="Get user information",
-        responses={200: UserSerializer},
-        security=[{'Bearer': []}]
-    )
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def user_info(self, request):
         user = request.user

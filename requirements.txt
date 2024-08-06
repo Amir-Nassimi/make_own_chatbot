@@ -1,6 +1,6 @@
 Django==5.0.7
 requests==2.32.3
-drf_yasg==1.21.7
+rasa[spacy]==3.6.20
 django-cors-headers==4.4.0
 singleton-decorator==1.0.0
 djangorestframework==3.15.2

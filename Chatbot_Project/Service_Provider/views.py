@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, sys, yaml, subprocess
+import os, sys, yaml, subprocess, signal
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -127,6 +127,9 @@ class ProvideServiceViewSet(ViewSet):
         except ChatBot.DoesNotExist as error:
             return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
         
+        if bot.is_active:
+            return Response('The bot has been initialized before!', status=status.HTTP_200_OK)
+        
         model_path = os.path.join(Config().Path(bot.id), 'models')
 
         if os.path.exists(model_path):
@@ -140,7 +143,8 @@ class ProvideServiceViewSet(ViewSet):
                 
                 bot.PORT = 8001
                 bot.IP = 'localhost'
-                bot.PID = str(process.id)
+                bot.PID = process.id
+                bot.is_active = True
                 bot.save()
                 return Response('The bot has been initialized sucesfully!', status=status.HTTP_200_OK)
             except Exception as error:
@@ -148,3 +152,25 @@ class ProvideServiceViewSet(ViewSet):
         else:
             return Response("No chatbot found!", status=status.HTTP_404_NOT_FOUND)
         
+
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def stop(self, request, pk=None):
+        try:
+            bot = ChatBot.objects.get(user=request.user, id=pk)
+        except ChatBot.DoesNotExist as error:
+            return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
+
+        if not bot.is_active:
+            return Response('The bot has not been initialized yet!', status=status.HTTP_200_OK)
+
+        try:
+            os.kill(bot.PID, signal.SIGTERM)
+            
+            bot.PID = None
+            bot.is_active = False
+            bot.save()
+            return Response('The bot has been initialized sucesfully!', status=status.HTTP_200_OK)
+        except ProcessLookupError:
+            return Response('Process not found', status=status.HTTP_404_NOT_FOUND)
+        except Exception as error:
+            return Response(f'Failed to start chatbot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)

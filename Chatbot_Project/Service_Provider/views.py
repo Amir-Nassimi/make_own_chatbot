@@ -1,5 +1,5 @@
 from pathlib import Path
-import os, sys, yaml, subprocess, signal, psutil
+import os, sys, yaml, subprocess, psutil
 
 from rest_framework import status
 from rest_framework.decorators import action
@@ -129,28 +129,29 @@ class ProvideServiceViewSet(ViewSet):
         
         if bot.is_active:
             return Response('This ChatBot has been initialized before!', status=status.HTTP_200_OK)
-        
+
         model_path = os.path.join(Config().Path(bot.id), 'models')
 
         if os.path.exists(model_path):
             port = 8001
-            command = [
-                'rasa', 'run', '--model', model_path, '--port', str(port), '--enable-api'
-            ]
+
+            conda_activate_cmd = "conda run -n MakeOwnChatbot"
+            rasa_cmd = f"rasa run --model {model_path} --port {port} --enable-api"
+            full_cmd = f"{conda_activate_cmd} {rasa_cmd}"
 
             try:
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                process = subprocess.Popen(full_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                
                 bot.PORT = 8001
                 bot.IP = 'localhost'
                 bot.PID = process.pid
-                bot.is_active = True
                 bot.save()
                 return Response('This ChatBot has been initialized sucesfully!', status=status.HTTP_200_OK)
             except Exception as error:
                 return Response(f'Failed to start ChatBot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response("No chatbot found!", status=status.HTTP_404_NOT_FOUND)
-        
+
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def stop(self, request, pk=None):
@@ -162,15 +163,22 @@ class ProvideServiceViewSet(ViewSet):
         if not bot.is_active:
             return Response('This ChatBot has not been initialized yet!', status=status.HTTP_200_OK)
 
-        try:
+        if psutil.pid_exists(bot.PID):
             process = psutil.Process(bot.PID)
-            process.terminate()
-            
-            bot.PID = None
-            bot.is_active = False
-            bot.save()
-            return Response('This ChatBot has been initialized sucesfully!', status=status.HTTP_200_OK)
-        except psutil.NoSuchProcess:
+            try:
+                for child in process.children(recursive=True):
+                    child.kill()
+                process.terminate()
+
+                if psutil.pid_exists(bot.PID):
+                    process.kill()
+                
+            except psutil.NoSuchProcess:
+                return Response('This ChatBot has already been terminated!', status=status.HTTP_200_OK)
+        else:
             return Response('Process not found', status=status.HTTP_404_NOT_FOUND)
-        except Exception as error:
-            return Response(f'Failed to start ChatBot: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        bot.PID = None
+        bot.is_active = False
+        bot.save()
+        return Response('This ChatBot has been terminated sucesfully!', status=status.HTTP_200_OK)

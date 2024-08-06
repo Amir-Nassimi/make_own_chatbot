@@ -10,9 +10,10 @@ class ChatBot(models.Model):
     id = models.UUIDField(default=UUID, primary_key=True, editable=False, unique=True)
 
     name = models.CharField(max_length=15)
+    PID = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=False)
-    port = models.IntegerField(blank=True, null=True)
-    ip = models.CharField(max_length=13, blank=True, null=True)
+    PORT = models.IntegerField(blank=True, null=True)
+    IP = models.CharField(max_length=13, blank=True, null=True)
 
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='User_Chatbot')
 

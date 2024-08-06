@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import ModelSerializer
 
 from .models import ChatBot, TrainableData
 
@@ -22,6 +22,7 @@ class ChatBotSerializer(ModelSerializer):
         fields = '__all__'
         extra_kwargs = {
             'user': {'write_only':True},
-            'ip': {'required': False},
-            'port': {'required': False}
+            'IP': {'required': False},
+            'PID': {'required': False},
+            'PORT': {'required': False}
         }

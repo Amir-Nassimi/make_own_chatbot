@@ -208,3 +208,45 @@ class ProvideServiceViewSet(ViewSet):
         except requests.RequestException as error:
             return Response(f'Failed to interact with Rasa server: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(response.json(), status=response.status_code)
+
+
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def resource_usage(self, request, pk=None):
+        try:
+            chatbot = ChatBot.objects.get(user=request.user, id=pk)
+        except ChatBot.DoesNotExist:
+            return Response({"error": "Chatbot not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not chatbot.pid:
+            return Response({"error": "Chatbot is not running"}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # Get the parent process using psutil
+            parent_process = psutil.Process(chatbot.pid)
+
+            # Initialize cumulative resource usage variables
+            total_memory_rss = 0
+            total_memory_vms = 0
+            total_cpu_usage = 0
+
+            # List to keep track of all processes (parent + children)
+            processes = [parent_process] + parent_process.children(recursive=True)
+
+            for process in processes:
+                memory_info = process.memory_info()
+                total_memory_rss += memory_info.rss  # Resident Set Size
+                total_memory_vms += memory_info.vms  # Virtual Memory Size
+                total_cpu_usage += process.cpu_percent(interval=1.0)
+
+            resource_usage = {
+                "memory_rss": total_memory_rss,
+                "memory_vms": total_memory_vms,
+                "memory_percent": parent_process.memory_percent(),  # Memory usage percentage
+                "cpu_usage_percent": total_cpu_usage  # CPU usage percentage
+            }
+
+            return Response(resource_usage, status=status.HTTP_200_OK)
+        except psutil.NoSuchProcess:
+            return Response("Process does not exist", status=status.HTTP_404_NOT_FOUND)
+        except Exception as error:
+            return Response("Failed to retrieve resource usage", status=status.HTTP_500_INTERNAL_SERVER_ERROR)

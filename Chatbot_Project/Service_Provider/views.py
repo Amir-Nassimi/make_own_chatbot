@@ -212,6 +212,13 @@ class ProvideServiceViewSet(ViewSet):
 
     @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
     def resource_usage(self, request, pk=None):
+        def format_memory_size(size_in_bytes):
+            # Convert bytes to a human-readable format
+            for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+                if size_in_bytes < 1024:
+                    return f"{size_in_bytes:.2f} {unit}"
+                size_in_bytes /= 1024
+
         try:
             chatbot = ChatBot.objects.get(user=request.user, id=pk)
         except ChatBot.DoesNotExist:
@@ -239,14 +246,14 @@ class ProvideServiceViewSet(ViewSet):
                 total_cpu_usage += process.cpu_percent(interval=1.0)
 
             resource_usage = {
-                "memory_rss": total_memory_rss,
-                "memory_vms": total_memory_vms,
-                "memory_percent": parent_process.memory_percent(),  # Memory usage percentage
-                "cpu_usage_percent": total_cpu_usage  # CPU usage percentage
+                "memory_rss": format_memory_size(total_memory_rss),
+                "memory_vms": format_memory_size(total_memory_vms),
+                "memory_percent": f"{parent_process.memory_percent():.2f}%",
+                "cpu_usage_percent": f"{total_cpu_usage:.2f}%"
             }
 
             return Response(resource_usage, status=status.HTTP_200_OK)
-        except psutil.NoSuchProcess:
-            return Response("Process does not exist", status=status.HTTP_404_NOT_FOUND)
+        except psutil.NoSuchProcess as error:
+            return Response(f"Process does not exist: {error}", status=status.HTTP_404_NOT_FOUND)
         except Exception as error:
-            return Response("Failed to retrieve resource usage", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(f"Failed to retrieve resource usage: {error}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)

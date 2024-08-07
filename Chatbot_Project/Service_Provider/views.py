@@ -1,3 +1,4 @@
+import requests
 from pathlib import Path
 import os, sys, yaml, subprocess, psutil
 
@@ -145,6 +146,7 @@ class ProvideServiceViewSet(ViewSet):
                 bot.PORT = 8001
                 bot.IP = 'localhost'
                 bot.PID = process.pid
+                bot.is_active = True
                 bot.save()
                 return Response('This ChatBot has been initialized sucesfully!', status=status.HTTP_200_OK)
             except Exception as error:
@@ -182,3 +184,27 @@ class ProvideServiceViewSet(ViewSet):
         bot.is_active = False
         bot.save()
         return Response('This ChatBot has been terminated sucesfully!', status=status.HTTP_200_OK)
+    
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def message(self, request, pk=None):
+        try:
+            bot = ChatBot.objects.get(user=request.user, id=pk)
+        except ChatBot.DoesNotExist as error:
+            return Response(f'This ChatBot is not exists or the info is not valid:{error}.', status=status.HTTP_404_NOT_FOUND)
+
+        if not bot.is_active:
+            return Response('This ChatBot has not been initialized yet!', status=status.HTTP_200_OK)
+
+        message = request.data.get('message', None)
+
+        if not message:
+            return Response("No message provided", status=status.HTTP_400_BAD_REQUEST)
+        
+        rasa_url = f"http://{bot.IP}:{bot.PORT}/webhooks/rest/webhook"
+
+        try:
+            response = requests.post(rasa_url, json={"message": message})
+        except requests.RequestException as error:
+            return Response(f'Failed to interact with Rasa server: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(response.json(), status=response.status_code)

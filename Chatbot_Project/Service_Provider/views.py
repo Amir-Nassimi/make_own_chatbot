@@ -217,12 +217,12 @@ class ProvideServiceViewSet(ViewSet):
         except ChatBot.DoesNotExist:
             return Response({"error": "Chatbot not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if not chatbot.pid:
+        if not chatbot.PID:
             return Response({"error": "Chatbot is not running"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             # Get the parent process using psutil
-            parent_process = psutil.Process(chatbot.pid)
+            parent_process = psutil.Process(chatbot.PID)
 
             # Initialize cumulative resource usage variables
             total_memory_rss = 0

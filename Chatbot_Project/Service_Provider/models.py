@@ -11,6 +11,7 @@ class ChatBot(models.Model):
 
     name = models.CharField(max_length=15)
     is_active = models.BooleanField(default=False)
+    is_trained = models.BooleanField(default=False)
     PID = models.IntegerField(blank=True, null=True)
     PORT = models.IntegerField(blank=True, null=True)
     IP = models.CharField(max_length=13, blank=True, null=True)
@@ -23,7 +24,6 @@ class TrainableData(models.Model):
 
     answers = models.TextField()
     questions = models.TextField()
-    used = models.BooleanField(default=False)
     topic = models.CharField(max_length=20, unique=True)
 
     bot = models.ForeignKey(ChatBot, on_delete=models.CASCADE, related_name='Chatbot_TrainableData')

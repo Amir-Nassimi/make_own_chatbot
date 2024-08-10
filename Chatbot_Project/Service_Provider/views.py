@@ -1,4 +1,5 @@
 import requests
+from uuid import UUID
 from pathlib import Path
 import os, sys, yaml, subprocess, psutil
 
@@ -21,6 +22,21 @@ class TrainableDataViewSet(ModelViewSet):
     serializer_class = TrainableDataSerializer
     permission_classes = [IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            ChatBot.objects.get(id=UUID(request.data['bot']), user=request.user, is_trained=False, is_active=False)
+        except KeyError: 
+            pass
+        except ChatBot.DoesNotExist:
+            return Response('This Chatbot has already been trained!!', status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ChatBotViewSet(ModelViewSet):
     queryset = ChatBot.objects.all()
@@ -117,7 +133,9 @@ class ProvideServiceViewSet(ViewSet):
                 os.remove(stories_file_path)
             except Exception as error:
                 return Response(f'Failed to clean up training data files: {error}', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+        
+        bot.is_trained = True
+        bot.save()
         return Response('This ChatBot has been trained sucesfully!', status=status.HTTP_200_OK)
     
 

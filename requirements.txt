@@ -1,7 +1,7 @@
+rasa==3.6.20
 psutil==6.0.0
 Django==5.0.7
 requests==2.32.3
-rasa[spacy]==3.6.20
 django-cors-headers==4.4.0
 singleton-decorator==1.0.0
 djangorestframework==3.15.2

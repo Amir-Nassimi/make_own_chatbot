@@ -17,7 +17,7 @@ def encode():
 
     for text in data["text"]:
         if text is None:
-            texts = ['Hi']
+            texts = ['None']
             break
 
     LaBSE = LaBSEModel()

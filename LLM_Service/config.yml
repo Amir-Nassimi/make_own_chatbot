@@ -5,7 +5,8 @@ language: "en"
 
 
 pipeline:
-  - name: WhitespaceTokenizer  # Still needed to break down text into tokens
+  - name: nlp_services.model_tokenizer.CustumWhitespaceTokenizer  # Still needed to break down text into tokens
+    api_url: "http://localhost:8002/tokenize"
   - name: CountVectorsFeaturizer
     return_sequence: true
   - name: nlp_services.labse_embedder.LaBSEEmbedder  # Produces sentence-level embeddings

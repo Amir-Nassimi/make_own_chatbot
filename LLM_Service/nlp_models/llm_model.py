@@ -26,9 +26,9 @@ class LaBSEModel:
             self._model.encode(sentences=sentences, device=self._device, normalize_embeddings=Config().NLP_Normalization)
 
     def encoding(self, sentences):
-        print(f'sentences are {sentences}')
         with no_grad():
-            embd = self._model.encode(sentences=sentences, device=self._device, normalize_embeddings=Config().NLP_Normalization)
+            embd = self._model.encode(sentences=sentences, output_value=Config().NLP_Tokenizer, device=self._device, normalize_embeddings=Config().NLP_Normalization)
+            embd = [e.tolist() for e in embd]
             return embd
     
     def similarity(self, embeddings_1, embeddings_2):

@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
 
-from .models import ChatBot, QuestionsData, TrainableData
+from .models import AnswersData, ChatBot, QuestionsData, TrainableData
 from .serializers import ChatBotSerializer, TrainableDataSerializer
 
 sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
@@ -110,8 +110,16 @@ class ProvideServiceViewSet(ViewSet):
                 )
 
                 domain_data["intents"].append(data.topic)
+
+                answers_list = AnswersData.objects.filter(trainable=data)
+                if not answers_list.exists():
+                    return Response(
+                        f"This ChatBot has no valid answers!!",
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
                 domain_data["responses"][f"utter_{data.topic}"] = [
-                    {"text": response} for response in data.answer
+                    {"text": example.answer} for example in answers_list
                 ]
 
                 stories_data["stories"].append(
@@ -317,7 +325,6 @@ class ProvideServiceViewSet(ViewSet):
 
         try:
             response = requests.post(rasa_url, json={"message": message})
-            print(response)
         except requests.RequestException as error:
             return Response(
                 f"Failed to interact with Rasa server: {error}",

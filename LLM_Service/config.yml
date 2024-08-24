@@ -3,32 +3,24 @@ recipe: default.v1
 assistant_id: default_spacy_bot
 language: "en" 
 
-# pipeline:
-#   - name: SpacyNLP
-#     model: en_core_web_md 
-#   - name: SpacyTokenizer
-#   - name: SpacyFeaturizer
-#   - name: RegexFeaturizer
-#   - name: LexicalSyntacticFeaturizer
-#   - name: CountVectorsFeaturizer
-#   - name: CountVectorsFeaturizer
-#     analyzer: "char_wb"
-#     min_ngram: 1
-#     max_ngram: 4
-#   - name: DIETClassifier
-#     epochs: 100
-#   - name: EntitySynonymMapper
-#   - name: ResponseSelector
-#     epochs: 100
-
 
 pipeline:
-  - name: WhitespaceTokenizer  # Tokenizer to break down text into tokens
-  - name: CountVectorsFeaturizer  # Standard featurizer that provides basic features
-  - name: nlp_services.labse_embedder.LaBSEEmbedder
+  - name: WhitespaceTokenizer  # Still needed to break down text into tokens
+  - name: CountVectorsFeaturizer
+    return_sequence: true
+  - name: nlp_services.labse_embedder.LaBSEEmbedder  # Produces sentence-level embeddings
     api_url: "http://localhost:8002/encode"
   - name: DIETClassifier
     epochs: 100
+    dense_dimension:
+      text: 768  # Matches LaBSE output
+      label: 768
+    concat_dimension:
+      text: 768  # Ensure this matches LaBSE and other feature sizes
+      label: 768
+    constrain_similarities: true
+    mask_sequence: true  # Disable sequence masking to avoid mismatches
+    pooling: average  # or 'max'
   - name: ResponseSelector
     epochs: 100
 

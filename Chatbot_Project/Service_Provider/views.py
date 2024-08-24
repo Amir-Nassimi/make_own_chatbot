@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ViewSet
 
-from .models import ChatBot, TrainableData
+from .models import ChatBot, TrainableData, QuestionsData
 from .serializers import ChatBotSerializer, TrainableDataSerializer
 
 sys.path.append(os.path.abspath(Path(__file__).resolve().parents[1]))
@@ -92,11 +92,19 @@ class ProvideServiceViewSet(ViewSet):
 
         if data_list.exists():
             for data in data_list:
+                questions_list = QuestionsData.objects.filter(trainable=data) 
+                
+                if not questions_list.exists():
+                    return Response(
+                        f"This ChatBot has no valid questions!!",
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
                 nlu_data["nlu"].append(
                     {
                         "intent": data.topic,
                         "examples": "\n".join(
-                            [f"- {example}" for example in data.questions.split(", ")]
+                            [f"- {example.question}" for example in questions_list]
                         ),
                     }
                 )

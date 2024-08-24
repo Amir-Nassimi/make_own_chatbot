@@ -22,8 +22,15 @@ class ChatBot(models.Model):
 class TrainableData(models.Model):
     id = models.UUIDField(default=UUID, primary_key=True, editable=False, unique=True)
 
-    answers = models.TextField()
-    questions = models.TextField()
+    answer = models.TextField()
     topic = models.CharField(max_length=20, unique=True)
 
     bot = models.ForeignKey(ChatBot, on_delete=models.CASCADE, related_name='Chatbot_TrainableData')
+
+
+class QuestionsData(models.Model):
+    id = models.UUIDField(default=UUID, primary_key=True, editable=False, unique=True)
+
+    question = models.TextField()
+
+    trainable = models.ForeignKey(TrainableData, on_delete=models.CASCADE, related_name='Questions')

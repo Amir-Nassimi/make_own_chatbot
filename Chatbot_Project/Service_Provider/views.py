@@ -111,7 +111,7 @@ class ProvideServiceViewSet(ViewSet):
 
                 domain_data["intents"].append(data.topic)
                 domain_data["responses"][f"utter_{data.topic}"] = [
-                    {"text": response} for response in data.answers
+                    {"text": response} for response in data.answer
                 ]
 
                 stories_data["stories"].append(

@@ -29,6 +29,9 @@ class LaBSEEmbedder(GraphComponent):
     def process(self, messages: List[Message]) -> List[Message]:
         for message in messages:
             text = message.get(TEXT)
+            
+            if text is None:
+                continue
 
             embeddings = self._get_embeddings(text)
             feature = Features(
@@ -43,6 +46,9 @@ class LaBSEEmbedder(GraphComponent):
     def process_training_data(self, training_data: TrainingData) -> TrainingData:
         for message in training_data.training_examples:
             text = message.get(TEXT)
+            
+            if text is None:
+                continue
 
             embeddings = self._get_embeddings(text)
             feature = Features(

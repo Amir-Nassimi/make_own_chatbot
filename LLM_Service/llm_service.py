@@ -15,14 +15,9 @@ def encode():
 
     texts = data["text"]
 
-    for text in data["text"]:
-        if text is None:
-            texts = ['None']
-            break
-
     LaBSE = LaBSEModel()
     embd = LaBSE.encoding(texts)
-    return jsonify({"embeddings": embd.tolist()})
+    return jsonify({"embeddings": embd})
 
 
 if __name__ == "__main__":
